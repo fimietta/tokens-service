@@ -1,5 +1,5 @@
-# Microservice
-Microservice skeleton
+# A Node TokenService
+TokenService skeleton
 
 ## Pre-requisites
 
