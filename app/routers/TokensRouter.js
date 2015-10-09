@@ -1,10 +1,11 @@
-'use strict';
+
 
 var http = require('http');
 var express = require('express');
 var TokensAPI = require('./../TokensAPI');
 
 var TokensRouter = function() {
+    'use strict';
     this.router = express.Router();
     this.tokensAPI = new TokensAPI();
 };
@@ -13,14 +14,11 @@ TokensRouter.prototype = {
 
     init: function() {
 
-        this.router.get('/tokens/', this.tokensAPI.getAll);
+        this.router.get('/tokens/:uuid', this.tokensAPI.getAll.bind(this.tokensAPI));
 
-        this.router.get('/tokens/:uuid', this.tokensAPI.get);
+        this.router.post('/tokens', this.tokensAPI.create.bind(this.tokensAPI));
 
-        this.router.post('/tokens', this.tokensAPI.post);
-
-        this.router.delete('/tokens/:uuid', this.tokensAPI.delete);
-
+        this.router.delete('/tokens', this.tokensAPI.deleteToken.bind(this.tokensAPI));
     },
 
     getRouter: function() {

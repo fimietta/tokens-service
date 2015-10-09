@@ -1,27 +1,35 @@
-'use strict';
+var TokensManager = require('./TokensManager');
 
-var TokensAPI = function() {
-
-};
+function TokensAPI() {
+    'use strict';
+    this.tokensManager = new TokensManager();
+}
 
 TokensAPI.prototype = {
 
     getAll: function(request, response) {
-        response.send('You have requested all the tokens of a specific user');
+        var resultPromise = this.tokensManager.findAllTokensOfUser(request.params.uuid);
+        resultPromise.success(this.sendData.bind(this, response));
     },
 
-    post: function (request, response) {
-        response.send('You have post a token ');
+    getTokenByID: function(request,response) {
+
     },
 
-    get: function(request, response) {
-        response.send('You have requested info about the token ' + request.params.uuid);
+    create: function (request, response) {
+        var resultPromise = this.tokensManager.createToken(request.body.TokenRequest);
+        resultPromise.success(this.sendData.bind(this, response));
     },
 
-    delete: function(request, response) {
-        response.send('You have requested to delete the token ' + request.params.uuid);
+    deleteToken: function (request, response) {
+        var resultPromise = this.tokensManager.deleteToken(request.params.uuid);
+        resultPromise.success(this.sendData.bind(this, response));
+    },
+
+    sendData: function(response, data) {
+        response.status(200);
+        response.json(data);
     }
-
 };
 
 module.exports = TokensAPI;

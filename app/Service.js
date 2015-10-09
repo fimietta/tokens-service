@@ -1,7 +1,6 @@
-'use strict';
-
 var http = require('http');
 var express = require('express');
+var bodyParser  = require('body-parser');
 var swaggerUiMiddleware = require('swagger-ui-middleware');
 var TokensRouter = require('./routers/TokensRouter');
 var AdminRouter = require('./routers/AdminRouter');
@@ -22,6 +21,8 @@ Service.prototype = {
         tokensRouter.init();
         adminRouter.init();
 
+        app.use(bodyParser.urlencoded({ extended: true }));
+        app.use(bodyParser.json());
 
         app.use('/api', tokensRouter.getRouter());
         app.use('/admin', adminRouter.getRouter());

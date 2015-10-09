@@ -1,10 +1,9 @@
-'use strict';
-
 var http = require('http');
 var express = require('express');
 var AdminAPI = require('./../AdminAPI');
 
 function AdminRouter() {
+    'use strict';
     this.router = express.Router();
     this.adminAPI = new AdminAPI();
 }
