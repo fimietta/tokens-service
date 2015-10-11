@@ -1,8 +1,12 @@
 var mongo = require('mongodb');
 var db = require('monk')('localhost/tokensdb');
 
-function TokensManager() {
-    this.tokensCollection = db.get('tokens');
+function TokensManager(tokensCollection) {
+    if(tokensCollection) {
+        this.tokensCollection = tokensCollection;
+    } else {
+        this.tokensCollection = db.get('tokens');
+    }
 }
 
 
@@ -13,12 +17,17 @@ TokensManager.prototype = {
         return promise;
     },
 
-    createToken: function(tokenData) {
+    findById: function(tokenID) {
+        var promise = this.tokensCollection.findById(tokenID);
+        return promise;
+    },
+
+    create: function(tokenData) {
         var promise = this.tokensCollection.insert(tokenData);
         return promise;
     },
 
-    deleteToken: function(tokenId) {
+    delete: function(tokenId) {
         var promise = this.tokensCollection.remove({
             _id: tokenId
         });

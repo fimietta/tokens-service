@@ -31,3 +31,9 @@ in production mode:
 Jshint checking ant tests:
 
     npm test
+
+## CURL example
+
+    curl -X "DELETE" http://localhost:9001/api/tokens/5617a9d8cb165221958495eb
+
+    curl -H "Content-Type: application/json" -X POST -d '{"TokenRequest":{"content": "A NEW TOKEN","type": "passwordreset","expirydate": "10-10-2014Z10:00","useruuid": "326776"}}' http://localhost:9001/api/tokens

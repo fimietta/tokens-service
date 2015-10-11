@@ -12,7 +12,11 @@ describe('TokensAPI', function() {
         fakePromise;
 
     beforeEach(function() {
-        tokensAPI = new TokensAPI();
+        var user = {
+            uuid: 'fake-user-uuid'
+        };
+
+        tokensAPI = new TokensAPI(user);
 
         request = { params: {}, body: {}};
         response = {
@@ -20,58 +24,67 @@ describe('TokensAPI', function() {
             status: sinon.spy()
         },
         fakePromise = {
+            successCallback: undefined,
+
+            failureCallback: undefined,
+
             success: function(callback) {
-                var data = [
-                    {
-                        _id: "56177e04549220a3b38eb26e",
-                        content: "assHJJJJaaaa",
-                        type: "passwordreset",
-                        expirydate: "10-10-2014Z10:00",
-                        useruuid: "326776"
-                    }
-                ];
-                callback.apply(tokensAPI, [data]);
+                this.successCallback = callback;
+            },
+            error: function(callback) {
+                this.errorCallback = callback;
+            },
+
+            resolve: function() {
+                var data = [{_id: "56177e04549220a3b38eb26e", content: "assHJJJJaaaa", type: "passwordreset", expirydate: "10-10-2014Z10:00", useruuid: "326776"}];
+                if(this.successCallback) {
+                    this.successCallback.apply(tokensAPI, [data]);
+                }
+            },
+            reject: function() {
+                var data = {error: 'something went wrong'};
+                if(this.errorCallback) {
+                    this.errorCallback.apply(tokensAPI, [data]);
+                }
             }
         };
 
     });
 
 
-    it('should ask at the token manager the list of the tokens of a user ', function() {
-        // Arrange
-        var spyFindAllTokensOfUser = sinon.spy(tokensAPI.tokensManager, 'findAllTokensOfUser');
-        request.params.uuid = 333333;
-
-        // Act
-        tokensAPI.getAll(request, response);
-
-        // Assert
-        expect(spyFindAllTokensOfUser).to.have.been.calledWith(333333);
-
-        // Teardown
-        spyFindAllTokensOfUser.restore();
-    });
-
-    it('should respond with the list of the tokens', function() {
+    it('should respond with the user\'s tokens list', function() {
         // Arrange
         var stubFindAllTokensOfUser = sinon.stub(tokensAPI.tokensManager, 'findAllTokensOfUser', function() {
             return fakePromise;
         });
 
-        var expectedResponse =[
-                {
-                    _id: "56177e04549220a3b38eb26e",
-                    content: "assHJJJJaaaa",
-                    type: "passwordreset",
-                    expirydate: "10-10-2014Z10:00",
-                    useruuid: "326776"
-                }
-            ];
+        var expectedResponse =[{_id: "56177e04549220a3b38eb26e", content: "assHJJJJaaaa", type: "passwordreset", expirydate: "10-10-2014Z10:00",useruuid: "326776"}];
+
         // Act
         tokensAPI.getAll(request, response);
+        fakePromise.resolve();
 
         // Assert
+        expect(stubFindAllTokensOfUser).to.have.been.calledWith('fake-user-uuid');
+        expect(response.status).to.have.been.calledWith(200);
         expect(response.json).to.have.been.calledWith(expectedResponse);
+
+        // Teardown
+        stubFindAllTokensOfUser.restore();
+    });
+
+    it('should send an error if something went wrong while retrieving the user\'s tokens list', function() {
+        // Arrange
+        var stubFindAllTokensOfUser = sinon.stub(tokensAPI.tokensManager, 'findAllTokensOfUser', function() {
+            return fakePromise;
+        });
+
+        // Act
+        tokensAPI.getAll(request, response);
+        fakePromise.reject();
+
+        // Assert
+        expect(response.status).to.have.been.calledWith(500);
 
         // Teardown
         stubFindAllTokensOfUser.restore();
@@ -80,37 +93,78 @@ describe('TokensAPI', function() {
 
     it('should ask at the token manager to create a new token ', function() {
         // Arrange
-        var spyCreate = sinon.spy(tokensAPI.tokensManager, 'createToken');
-        request.body.TokenRequest = {};
+        var stubCreate = sinon.stub(tokensAPI.tokensManager, 'create', function() {
+            return fakePromise;
+        });
+
+        request.body.TokenRequest = {content:'xx',maxAge:1,type:'web'};
 
         // Act
         tokensAPI.create(request, response);
+        fakePromise.success();
 
         // Assert
-        expect(spyCreate).to.have.been.called;
+        expect(stubCreate).to.have.been.calledWith({content:'xx',maxAge:1,type:'web'});
 
         // Teardown
-        spyCreate.restore();
+        stubCreate.restore();
+    });
+
+    it('should send an error if the token manager is unable to create a new token', function() {
+        // Arrange
+        var stubCreate = sinon.stub(tokensAPI.tokensManager, 'create', function() {
+            return fakePromise;
+        });
+
+        request.body.TokenRequest = {content:'xx',maxAge:1,type:'web'};
+
+        // Act
+        tokensAPI.create(request, response);
+        fakePromise.reject();
+
+        // Assert
+        expect(stubCreate).to.have.been.calledWith({content:'xx',maxAge:1,type:'web'});
+        expect(response.status).to.have.been.calledWith(500);
+
+        // Teardown
+        stubCreate.restore();
     });
 
 
     it('should ask at the token manager to delete a token given its id', function() {
         // Arrange
-        var spyDelete = sinon.spy(tokensAPI.tokensManager, 'deleteToken');
+        var stubDelete = sinon.stub(tokensAPI.tokensManager, 'delete', function() {
+            return fakePromise;
+        });
         request.params.uuid = 1234;
 
         // Act
-        tokensAPI.deleteToken(request, response);
+        tokensAPI.delete(request, response);
+        fakePromise.success();
 
         // Assert
-        expect(spyDelete).to.have.been.called;
+        expect(stubDelete).to.have.been.calledWith(1234);
 
         // Teardown
-        spyDelete.restore();
+        stubDelete.restore();
     });
 
+    it('should send an error if the token manager is unable to delete a token given its id', function() {
+        // Arrange
+        var stubDelete = sinon.stub(tokensAPI.tokensManager, 'delete', function() {
+            return fakePromise;
+        });
+        request.params.uuid = 1234;
 
+        // Act
+        tokensAPI.delete(request, response);
+        fakePromise.reject();
 
+        // Assert
+        expect(response.status).to.have.been.calledWith(500);
 
+        // Teardown
+        stubDelete.restore();
+    });
 
 });
