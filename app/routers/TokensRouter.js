@@ -2,7 +2,7 @@
 
 var http = require('http');
 var express = require('express');
-var TokensAPI = require('./../TokensAPI');
+var TokensAPI = require('./../api/TokensAPI');
 
 var TokensRouter = function() {
     'use strict';

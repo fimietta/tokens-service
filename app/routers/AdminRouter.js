@@ -1,6 +1,6 @@
 var http = require('http');
 var express = require('express');
-var AdminAPI = require('./../AdminAPI');
+var AdminAPI = require('./../api/AdminAPI');
 
 function AdminRouter() {
     'use strict';

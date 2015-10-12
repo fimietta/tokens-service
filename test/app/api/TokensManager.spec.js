@@ -2,7 +2,7 @@
 
 'use strict';
 
-var TokensManager = require('../../app/TokensManager');
+var TokensManager = require('../../../app/api/TokensManager');
 
 describe('TokensManager', function() {
 
